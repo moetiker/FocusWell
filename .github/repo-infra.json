@@ -1,0 +1,22 @@
+{
+  "moving_major_tag": false,
+  "version_files": [
+    {
+      "path": "VERSION",
+      "pattern": "^[0-9][^\\n]*$",
+      "replacement": "$VERSION",
+      "verify": "^$VERSION$"
+    }
+  ],
+  "release_files": [
+    "Casks/focuswell.rb"
+  ],
+  "release_assets": [
+    "FocusWell-*.zip"
+  ],
+  "exceptions": {
+    "homebrew": "a macOS .app delivered as a Homebrew cask (Casks/focuswell.rb); the rule expects a formula, raised as a question to the standard",
+    "linux-packages": "a macOS menu bar app built on Accessibility, SkyLight and AppKit; it has no Linux build",
+    "screenshot": "the interface is a menu bar balloon only, shown as its two states in the README"
+  }
+}
