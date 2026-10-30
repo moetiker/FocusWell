@@ -1,6 +1,5 @@
 import AppKit
 import ApplicationServices
-import PrivateAPI
 
 /// Gives the window under the mouse the focus without raising it. Everything runs on
 /// the main run loop: the poll timer, the space notification and the accessibility
@@ -52,7 +51,7 @@ public final class FocusEngine {
         Log.verbose = settings.verbose
     }
 
-    /// Whether focusing without raising is possible: it needs the private SkyLight api.
+    /// Whether focusing without raising is possible: it needs the calls in PrivateAPI.
     public static var isAvailable: Bool { FocusFirst.isAvailable }
 
     /// Whether this process may use the accessibility api. With `prompt`, macOS asks
@@ -232,8 +231,7 @@ public final class FocusEngine {
                 needsFocus = needsFocus && isMainWindow(frontmost, focusedWindow,
                     chromeApp: isPWA(frontmostApp?.bundleIdentifier)) &&
                     ((mouseWindowPID != frontmostPID && !appRaisesOnFocus) || notContainedWithin)
-                var psn = ProcessSerialNumber()
-                if needsFocus && AR_GetProcessForPID(frontmostPID, &psn) { focusedWindowPSN = psn }
+                if needsFocus { focusedWindowPSN = PrivateAPI.process(for: frontmostPID) }
             } else {
                 Log.debug("No focused window")
                 if frontmost.element(kAXMainWindowAttribute) != nil { needsFocus = false }
@@ -254,8 +252,7 @@ public final class FocusEngine {
         delayTicks = 0 // disable delay
         if focusTimes != 0 { focusTimes -= 1 } else { focusTimes = 3 }
 
-        var mouseWindowPSN = ProcessSerialNumber()
-        guard AR_GetProcessForPID(mouseWindowPID, &mouseWindowPSN) else { return }
+        guard var mouseWindowPSN = PrivateAPI.process(for: mouseWindowPID) else { return }
         let floatingWindow = [kAXFloatingWindowSubrole, kAXSystemFloatingWindowSubrole,
             kAXUnknownSubrole].contains(mouseWindow.subrole ?? "")
         if floatingWindow {

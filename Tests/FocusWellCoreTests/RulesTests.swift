@@ -1,3 +1,4 @@
+import Darwin
 import Testing
 @testable import FocusWellCore
 
@@ -16,6 +17,13 @@ import Testing
 
     @Test func noBundleIdIsNoPWA() {
         #expect(!Rules.isPWA(nil))
+    }
+
+    // A macOS update that drops one of the private calls turns FocusWell off with
+    // "Not available on this macOS"; this test names the release that did it.
+    @Test func privateCallsResolve() {
+        #expect(PrivateAPI.isAvailable)
+        #expect(PrivateAPI.process(for: getpid()) != nil)
     }
 
     @Test func defaultsFocusAtOnceAndPauseWithControl() {

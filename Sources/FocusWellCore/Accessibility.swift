@@ -1,6 +1,5 @@
 import AppKit
 import ApplicationServices
-import PrivateAPI
 
 @MainActor
 enum Log {
@@ -53,10 +52,7 @@ extension AXUIElement {
         return AXUIElementGetPid(self, &pid) == .success ? pid : nil
     }
 
-    var windowID: CGWindowID? {
-        var id: CGWindowID = 0
-        return _AXUIElementGetWindow(self, &id) == .success ? id : nil
-    }
+    var windowID: CGWindowID? { PrivateAPI.windowID(of: self) }
 
     var position: CGPoint? {
         var point = CGPoint.zero

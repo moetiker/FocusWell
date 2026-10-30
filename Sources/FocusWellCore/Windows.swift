@@ -1,6 +1,5 @@
 import AppKit
 import ApplicationServices
-import PrivateAPI
 
 extension FocusEngine {
     static let stackThreshold = 20

@@ -1,6 +1,5 @@
 import AppKit
 import ApplicationServices
-import PrivateAPI
 
 /// Focusing a window without raising it relies on the private SkyLight api. It can
 /// break easily across macOS versions, there is no guarantee it keeps on working.
@@ -12,7 +11,7 @@ import PrivateAPI
 enum FocusFirst {
     static let userGenerated: UInt32 = 0x200
 
-    static var isAvailable: Bool { AR_SkyLightAvailable() }
+    static var isAvailable: Bool { PrivateAPI.isAvailable }
 
     static func makeKeyWindow(_ psn: inout ProcessSerialNumber, windowID: CGWindowID) {
         var bytes = [UInt8](repeating: 0, count: 0xf8)
@@ -22,9 +21,9 @@ enum FocusFirst {
         bytes.replaceSubrange(0x20..<0x30, with: repeatElement(0xff, count: 0x10))
 
         bytes[0x08] = 0x01
-        _ = AR_SLPSPostEventRecordTo(&psn, &bytes)
+        PrivateAPI.postEventRecord(to: &psn, &bytes)
         bytes[0x08] = 0x02
-        _ = AR_SLPSPostEventRecordTo(&psn, &bytes)
+        PrivateAPI.postEventRecord(to: &psn, &bytes)
     }
 
     static func focusWithoutRaise(
@@ -32,7 +31,7 @@ enum FocusFirst {
         focused focusedPSN: ProcessSerialNumber?, focusedWindowID: CGWindowID
     ) {
         Log.debug("Focus")
-        if var focusedPSN, AR_SameProcess(&psn, &focusedPSN) {
+        if var focusedPSN, isSameProcess(psn, focusedPSN) {
             Log.debug("Same process")
             var bytes = [UInt8](repeating: 0, count: 0xf8)
             bytes[0x04] = 0xf8
@@ -40,7 +39,7 @@ enum FocusFirst {
 
             bytes[0x8a] = 0x02
             put(focusedWindowID, into: &bytes, at: 0x3c)
-            _ = AR_SLPSPostEventRecordTo(&focusedPSN, &bytes)
+            PrivateAPI.postEventRecord(to: &focusedPSN, &bytes)
 
             // @hack
             // Artificially delay the activation by 10ms. This is necessary
@@ -50,11 +49,15 @@ enum FocusFirst {
 
             bytes[0x8a] = 0x01
             put(windowID, into: &bytes, at: 0x3c)
-            _ = AR_SLPSPostEventRecordTo(&psn, &bytes)
+            PrivateAPI.postEventRecord(to: &psn, &bytes)
         }
 
-        _ = AR_SLPSSetFrontProcessWithOptions(&psn, windowID, userGenerated)
+        PrivateAPI.setFrontProcess(&psn, windowID: windowID, mode: userGenerated)
         makeKeyWindow(&psn, windowID: windowID)
+    }
+
+    private static func isSameProcess(_ a: ProcessSerialNumber, _ b: ProcessSerialNumber) -> Bool {
+        a.highLongOfPSN == b.highLongOfPSN && a.lowLongOfPSN == b.lowLongOfPSN
     }
 
     private static func put(_ value: UInt32, into bytes: inout [UInt8], at offset: Int) {
