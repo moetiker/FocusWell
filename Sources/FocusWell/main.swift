@@ -12,7 +12,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let enabledItem = NSMenuItem()
     private let accessItem = NSMenuItem()
     private var engine: FocusEngine?
-    private var trustTimer: Timer?
+    private var trusted = false
 
     private var enabled = UserDefaults.standard.object(forKey: enabledKey) as? Bool ?? true {
         didSet {
@@ -37,7 +37,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem.button?.action = #selector(clicked)
         statusItem.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
 
-        if !FocusEngine.isTrusted(prompt: true) { watchTrust() }
+        _ = FocusEngine.isTrusted(prompt: true)
+        watchTrust()
         update()
     }
 
@@ -63,17 +64,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         _ = FocusEngine.isTrusted(prompt: true)
         let url = "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
         if let url = URL(string: url) { NSWorkspace.shared.open(url) }
-        watchTrust()
     }
 
-    /// macOS does not announce a granted permission, so poll until it is there.
+    /// macOS announces neither a granted nor a revoked permission, so poll for both.
+    /// Without it the balloon stayed green after the permission was switched off.
     private func watchTrust() {
-        guard trustTimer == nil else { return }
-        trustTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+        Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             MainActor.assumeIsolated { [weak self] in
-                guard let self, FocusEngine.isTrusted() else { return }
-                trustTimer?.invalidate()
-                trustTimer = nil
+                guard let self, FocusEngine.isTrusted() != trusted else { return }
                 update()
             }
         }
@@ -81,7 +79,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Starts or stops the engine to match the state and colours the balloon.
     private func update() {
-        let trusted = FocusEngine.isTrusted()
+        trusted = FocusEngine.isTrusted()
         let running = enabled && trusted && FocusEngine.isAvailable
 
         if running && engine == nil {

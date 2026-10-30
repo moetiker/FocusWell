@@ -10,7 +10,7 @@ enum Rules {
         "Reeder",
         "PDFgear",
     ]
-    static let pwaBrowsers = ["Chrome", "Chromium", "Vivaldi", "Brave", "Opera", "edgemac", "helium"]
+    static let pwaBrowsers = ["Chrome", "Chromium", "Vivaldi", "brave", "Opera", "edgemac", "helium"]
     /// These raise their window when it gets the focus, so they only get it when
     /// the mouse moves to another app or out of the focused window.
     static let appsRaisingOnFocus = ["IntelliJ IDEA", "PyCharm", "WebStorm", "Arc", "Dia"]
@@ -30,8 +30,11 @@ enum Rules {
     static func isPWA(_ bundleIdentifier: String?) -> Bool {
         guard let components = bundleIdentifier?.components(separatedBy: ".") else { return false }
         let pake = components.count == 3 && components[1] == "pake"
+        // Brave names the vendor only: com.brave.Browser.app.<id>
+        let browser = components.count > 4 &&
+            (pwaBrowsers.contains(components[2]) || pwaBrowsers.contains(components[1]))
         // browser channels (canary, beta, dev) insert one component before "app"
-        return pake || (components.count > 4 && pwaBrowsers.contains(components[2]) &&
+        return pake || (browser &&
             (components[3] == "app" || (components.count > 5 && components[4] == "app")))
     }
 }

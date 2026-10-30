@@ -16,6 +16,10 @@ public final class FocusEngine {
     // Within windowCorrection pixels of a screen edge, the mouse counts as being
     // screenEdgeCorrection pixels away from that edge.
     static let screenEdgeCorrection: CGFloat = 1 // 1 <= value <= windowCorrection
+    // An app that hangs makes every accessibility call wait for the default timeout
+    // of about 6 seconds, which freezes the poll timer and the menu bar balloon with
+    // it. A call that takes longer than this fails instead, and the tick moves on.
+    static let messagingTimeout: Float = 0.5
 
     static var shared: FocusEngine?
 
@@ -27,6 +31,10 @@ public final class FocusEngine {
 
     private var oldPoint = CGPoint.zero
     private var oldCorrectedPoint = CGPoint.zero
+    // The direction of the last real movement. With requireMouseStop the focus is
+    // decided on the tick after the mouse stopped, where the movement itself is zero:
+    // correcting by that pushed the point up and left whatever way the mouse came.
+    private var lastMouseDiff = CGVector.zero
     private var loggedDisplay = kCGNullDirectDisplay
     private var propagateMouseMoved = false
     private var spaceHasChanged = false
@@ -49,6 +57,8 @@ public final class FocusEngine {
         self.settings = settings
         ignoreApps = settings.ignoreApps + [Rules.assistiveControl]
         Log.verbose = settings.verbose
+        // set on the system-wide element, the timeout applies to every element
+        AXUIElementSetMessagingTimeout(systemWide, Self.messagingTimeout)
     }
 
     /// Whether focusing without raising is possible: it needs the calls in PrivateAPI.
@@ -116,6 +126,7 @@ public final class FocusEngine {
 
         var mouseMoved = abs(mouseXDiff) > settings.mouseDelta || abs(mouseYDiff) > settings.mouseDelta
         let mouseStopped = !mouseMoved
+        if !mouseStopped { lastMouseDiff = CGVector(dx: mouseXDiff, dy: mouseYDiff) }
         mouseMoved = mouseMoved || propagateMouseMoved
         propagateMouseMoved = false
 
@@ -124,7 +135,7 @@ public final class FocusEngine {
         // the correction is applied before any of the returns below, so that
         // oldCorrectedPoint always has a recent value
         if mouseMoved {
-            mousePoint = correctedMousePoint(mousePoint, dx: mouseXDiff, dy: mouseYDiff)
+            mousePoint = correctedMousePoint(mousePoint, dx: lastMouseDiff.dx, dy: lastMouseDiff.dy)
             oldCorrectedPoint = mousePoint
         } else {
             mousePoint = oldCorrectedPoint
