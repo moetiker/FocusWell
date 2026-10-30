@@ -121,29 +121,20 @@ jobs:
             exit 1
           fi
           rm -f "$KEY"
-          xcrun stapler staple build/FocusWell.app
+          # stapler asks Apple's ticket server; see scripts/retry
+          scripts/retry xcrun stapler staple build/FocusWell.app
           rm -f "$ZIP"
           ditto -c -k --keepParent build/FocusWell.app "$ZIP"
 
-      # stapler and spctl ask Apple's ticket server. The first CI release (0.1.3)
-      # failed here with "The network connection was lost" (stapler error 68)
-      # after Apple had accepted and stapled the app, so each check gets five
-      # tries. A real rejection fails all five and still stops the release.
+      # stapler and spctl ask Apple's ticket server; see scripts/retry. A real
+      # rejection fails all five tries and still stops the release.
       - name: Verify the app
         run: |
-          retry() {
-            for try in 1 2 3 4 5; do
-              "$@" && return 0
-              echo "attempt $try of 5 failed: $*" >&2
-              [ "$try" -lt 5 ] && sleep $((try * 10))
-            done
-            return 1
-          }
-          retry xcrun stapler validate build/FocusWell.app
-          retry spctl -a -t exec -vv build/FocusWell.app
+          scripts/retry xcrun stapler validate build/FocusWell.app
+          scripts/retry spctl -a -t exec -vv build/FocusWell.app
           rm -rf "$RUNNER_TEMP/unzipped"
           ditto -x -k "$ZIP" "$RUNNER_TEMP/unzipped"
-          retry spctl -a -t exec -vv "$RUNNER_TEMP/unzipped/FocusWell.app"
+          scripts/retry spctl -a -t exec -vv "$RUNNER_TEMP/unzipped/FocusWell.app"
 
       # -o keeps make from rebuilding the zip, and with it the app, before it
       # rewrites the cask from the zip's checksum.
