@@ -204,6 +204,16 @@ public final class FocusEngine {
         var appRaisesOnFocus = false
         var needsFocus = !settings.invertIgnoreApps && mouseWindowPresent
         let mouseWindowApp = AXUIElementCreateApplication(mouseWindowPID)
+        // The app rules come first and apply to every window. They used to be checked
+        // only for windows with a title, so an untitled window of an ignored app went
+        // through the main window test instead and could take the focus.
+        if mouseWindowPresent {
+            if mouseWindowApp.titleEquals(ignoreApps) {
+                needsFocus = settings.invertIgnoreApps
+                Log.debug(settings.invertIgnoreApps ? "Including app" : "Excluding app")
+            }
+            appRaisesOnFocus = mouseWindowApp.titleEquals(Rules.appsRaisingOnFocus)
+        }
         if needsFocus && mouseWindow.titleEquals([Rules.noTitle, Rules.untitled]) {
             needsFocus = isMainWindow(mouseWindowApp, mouseWindow, chromeApp: isPWA(
                 NSRunningApplication(processIdentifier: mouseWindowPID)?.bundleIdentifier))
@@ -212,12 +222,6 @@ public final class FocusEngine {
             [Rules.bartenderBar, Rules.zim, Rules.appStoreSearchResults], patterns: settings.ignoreTitles) {
             needsFocus = false
             Log.debug("Excluding window")
-        } else if mouseWindowPresent {
-            if mouseWindowApp.titleEquals(ignoreApps) {
-                needsFocus = settings.invertIgnoreApps
-                Log.debug(settings.invertIgnoreApps ? "Including app" : "Excluding app")
-            }
-            appRaisesOnFocus = mouseWindowApp.titleEquals(Rules.appsRaisingOnFocus)
         }
         if needsFocus && Screens.isOffscreen(mouseWindow, mouse: mousePoint) {
             needsFocus = false
