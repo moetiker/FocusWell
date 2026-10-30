@@ -5,6 +5,7 @@
 <h1 align="center">FocusWell</h1>
 
 <p align="center">
+  <a href="https://github.com/moetiker/FocusWell/actions/workflows/ci.yml"><img src="https://github.com/moetiker/FocusWell/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/moetiker/FocusWell/releases/latest"><img src="https://img.shields.io/github/v/release/moetiker/FocusWell" alt="Release"></a>
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License: GPL-3.0"></a>
   <img src="https://img.shields.io/badge/macOS-14%2B-lightgrey" alt="macOS 14 or later">
@@ -61,7 +62,8 @@ Building needs Xcode or the Command Line Tools with Swift 6.
 The build signs with the first Developer ID Application certificate in the keychain,
 and ad hoc without one. `SIGN_IDENTITY` names another identity, `-` forces ad hoc.
 
-A release is signed and notarized:
+A release is built, signed and notarized by the Create release PR workflow on GitHub.
+To do the same by hand:
 
     xcrun notarytool store-credentials FocusWell --apple-id <apple id> --team-id <team id>
     make clean
