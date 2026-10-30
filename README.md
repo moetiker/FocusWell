@@ -1,25 +1,54 @@
-# FocusWell
+<p align="center">
+  <img src="docs/icon.png" width="128" height="128" alt="FocusWell icon">
+</p>
+
+<h1 align="center">FocusWell</h1>
+
+<p align="center">
+  <a href="https://github.com/moetiker/FocusWell/releases/latest"><img src="https://img.shields.io/github/v/release/moetiker/FocusWell" alt="Release"></a>
+  <a href="LICENSE.md"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License: GPL-3.0"></a>
+  <img src="https://img.shields.io/badge/macOS-14%2B-lightgrey" alt="macOS 14 or later">
+</p>
 
 FocusWell gives the window under the mouse the keyboard focus without bringing it to
 the front. Point at a window and type: the keys go there, and the window stays where it
-is in the stack.
+is in the stack. A terminal half hidden behind an editor takes your commands while the
+editor stays on top.
 
-It sits in the menu bar as a small balloon. Green means the focus follows the mouse, red
-means it is off. Click the balloon to switch it on or off, right-click it for the menu
-with Quit. Hold Control to pause it while moving the mouse.
-
-It needs macOS 14 or later and runs on Apple silicon and Intel Macs.
+It runs on macOS 14 or later, on Apple silicon and Intel Macs.
 
 ## Install
 
     brew tap moetiker/FocusWell https://github.com/moetiker/FocusWell
     brew install --cask focuswell
 
-Open FocusWell from the Applications folder. On the first start macOS asks for
-Accessibility access: allow it under System Settings > Privacy & Security >
-Accessibility. The balloon turns green as soon as access is granted.
+Or download the zip from the [latest release](https://github.com/moetiker/FocusWell/releases/latest)
+and move FocusWell.app into the Applications folder.
+
+On the first start macOS asks for Accessibility access. Click **Open System Settings**
+and switch FocusWell on under Privacy & Security > Accessibility.
+
+## Use
+
+FocusWell lives in the menu bar as a balloon:
+
+| | |
+|---|---|
+| <img src="docs/balloon-on.png" width="24" alt="green balloon"> | The focus follows the mouse. |
+| <img src="docs/balloon-off.png" width="24" alt="red balloon"> | Off, or Accessibility access is missing. |
+
+- `Click`: Switch FocusWell on or off. Without Accessibility access, the click asks for it.
+- `Right-click, Control-click`: Open the menu with Quit.
+- `Control` held: Pause while you move the mouse, for example to cross a window on the
+  way to another one.
+
+FocusWell leaves the focus alone while a mouse button is held, while a menu is open,
+and in Mission Control and the Dock. A dialog that has the focus keeps it, and floating
+windows such as palettes do not take it.
 
 ## Build
+
+Building needs Xcode or the Command Line Tools with Swift 6.
 
     make app        # build/FocusWell.app
     make install    # into /Applications
