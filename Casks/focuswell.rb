@@ -8,7 +8,7 @@ cask "focuswell" do
   desc "Gives the window under the mouse the focus without raising it"
   homepage "https://github.com/moetiker/FocusWell"
 
-  depends_on macos: ">= :sonoma"
+  depends_on macos: :sonoma
 
   app "FocusWell.app"
 
