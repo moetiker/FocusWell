@@ -6,7 +6,9 @@ import Testing
     @Test(arguments: [
         ("com.google.Chrome.app.abcdefgh", true),
         ("com.google.Chrome.canary.app.abcdefgh", true),
-        ("com.brave.Browser.app.abcdefgh", false),
+        ("com.brave.Browser.app.abcdefgh", true),
+        ("com.brave.Browser.beta.app.abcdefgh", true),
+        ("com.brave.Browser", false),
         ("com.microsoft.edgemac.app.abcdefgh", true),
         ("com.pake.myapp", true),
         ("com.apple.Safari", false),
