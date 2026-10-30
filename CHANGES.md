@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### New
 
 ### Changed
+- After `brew install --cask focuswell`, Homebrew shows how to give FocusWell Accessibility access, and to add it with the plus button when it is missing from the list.
 
 ### Fixed
 
