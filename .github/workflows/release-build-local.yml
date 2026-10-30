@@ -125,13 +125,25 @@ jobs:
           rm -f "$ZIP"
           ditto -c -k --keepParent build/FocusWell.app "$ZIP"
 
+      # stapler and spctl ask Apple's ticket server. The first CI release (0.1.3)
+      # failed here with "The network connection was lost" (stapler error 68)
+      # after Apple had accepted and stapled the app, so each check gets five
+      # tries. A real rejection fails all five and still stops the release.
       - name: Verify the app
         run: |
-          xcrun stapler validate build/FocusWell.app
-          spctl -a -t exec -vv build/FocusWell.app
+          retry() {
+            for try in 1 2 3 4 5; do
+              "$@" && return 0
+              echo "attempt $try of 5 failed: $*" >&2
+              [ "$try" -lt 5 ] && sleep $((try * 10))
+            done
+            return 1
+          }
+          retry xcrun stapler validate build/FocusWell.app
+          retry spctl -a -t exec -vv build/FocusWell.app
           rm -rf "$RUNNER_TEMP/unzipped"
           ditto -x -k "$ZIP" "$RUNNER_TEMP/unzipped"
-          spctl -a -t exec -vv "$RUNNER_TEMP/unzipped/FocusWell.app"
+          retry spctl -a -t exec -vv "$RUNNER_TEMP/unzipped/FocusWell.app"
 
       # -o keeps make from rebuilding the zip, and with it the app, before it
       # rewrites the cask from the zip's checksum.
