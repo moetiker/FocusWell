@@ -15,4 +15,10 @@ cask "focuswell" do
   uninstall quit: "ch.oetiker.FocusWell"
 
   zap trash: "~/Library/Preferences/ch.oetiker.FocusWell.plist"
+
+  caveats <<~EOS
+    FocusWell needs Accessibility access. On the first start, allow it under
+    System Settings > Privacy & Security > Accessibility. If FocusWell is not
+    in the list, add #{appdir}/FocusWell.app with the plus button.
+  EOS
 end
