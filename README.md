@@ -84,5 +84,5 @@ is missing from the Accessibility list or stays red while switched on, add
 
 FocusWell started as a fork of [AutoRaise](https://github.com/sbmpost/AutoRaise) by
 sbmpost, reduced to focusing without raising. Focusing without raising uses the method
-of [yabai](https://github.com/koekeishiya/yabai). Like AutoRaise, FocusWell is licensed
-under the GNU General Public License, version 3 (LICENSE.md).
+of [yabai](https://github.com/koekeishiya/yabai) (MIT, LICENSE-yabai.md). Like AutoRaise,
+FocusWell is licensed under the GNU General Public License, version 3 (LICENSE.md).
