@@ -29,7 +29,8 @@ Or download the zip from the [latest release](https://github.com/moetiker/FocusW
 and move FocusWell.app into the Applications folder.
 
 On the first start macOS asks for Accessibility access. Click **Open System Settings**
-and switch FocusWell on under Privacy & Security > Accessibility.
+and switch FocusWell on under Privacy & Security > Accessibility. If FocusWell is not
+in the list, add /Applications/FocusWell.app with the plus button.
 
 ## Use
 
