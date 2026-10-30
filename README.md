@@ -20,7 +20,10 @@ It runs on macOS 14 or later, on Apple silicon and Intel Macs.
 ## Install
 
     brew tap moetiker/FocusWell https://github.com/moetiker/FocusWell
+    brew trust --cask moetiker/focuswell/focuswell
     brew install --cask focuswell
+
+`brew trust` exists from Homebrew 6 on; skip it on older versions.
 
 Or download the zip from the [latest release](https://github.com/moetiker/FocusWell/releases/latest)
 and move FocusWell.app into the Applications folder.
