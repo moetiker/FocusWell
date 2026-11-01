@@ -11,11 +11,11 @@
 #
 # setup installs the current macOS from Apple's IPSW, lets Tart's provisioning
 # create the user admin/admin with SSH and automatic login, installs Homebrew and
-# turns SIP off with tests/vm/disable-sip.pkr.hcl. SIP off lets the test grant
+# turns SIP off with Tests/vm/disable-sip.pkr.hcl. SIP off lets the test grant
 # Accessibility by writing TCC.db; a script cannot switch it on otherwise.
 #
 # run installs the released cask, or with --local the zip from `make zip`, and
-# runs tests/vm/check.sh in the copy. --show opens the VM window. The exit code
+# runs Tests/vm/check.sh in the copy. --show opens the VM window. The exit code
 # is the number of failed checks. FOCUSWELL_VM names the clean image (default
 # focuswell-clean), which is never started after setup.
 set -euo pipefail
@@ -99,8 +99,8 @@ setup() {
 
     if [ "$stage" = provisioned ]; then
         echo "== SIP off"
-        packer init tests/vm/disable-sip.pkr.hcl >/dev/null
-        packer build -var "vm_name=$BUILDING" tests/vm/disable-sip.pkr.hcl
+        packer init Tests/vm/disable-sip.pkr.hcl >/dev/null
+        packer build -var "vm_name=$BUILDING" Tests/vm/disable-sip.pkr.hcl
         boot "$BUILDING" --no-graphics
         vm_ssh "$BUILDING" csrutil status </dev/null | grep -q disabled || { echo "SIP is still on" >&2; exit 1; }
         halt "$BUILDING"
@@ -154,8 +154,8 @@ run() {
     done
     exists "$CLEAN" || { echo "no $CLEAN yet; run: scripts/test-vm setup" >&2; exit 1; }
 
-    swiftc -O -target arm64-apple-macos14 tests/vm/focus-check.swift -o build/focus-check
-    local files=(tests/vm/check.sh build/focus-check) mode=(cask)
+    swiftc -O -target arm64-apple-macos14 Tests/vm/focus-check.swift -o build/focus-check
+    local files=(Tests/vm/check.sh build/focus-check) mode=(cask)
     if [ $local_build = 1 ]; then
         make zip
         local zip
