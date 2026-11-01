@@ -1,7 +1,7 @@
 # Homebrew cask for FocusWell. This repository is its own tap.
 cask "focuswell" do
-  version "0.1.3"
-  sha256 "402677ebf7f489284b73be321c58bc6b6048076a6242a9c428706326071861cd"
+  version "0.2.0"
+  sha256 "eca4dab6b04076e4f09f13b1036444f98f07d2266537b4c934bb3bdebbaf1725"
 
   url "https://github.com/moetiker/FocusWell/releases/download/v#{version}/FocusWell-#{version}.zip"
   name "FocusWell"
