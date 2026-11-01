@@ -85,7 +85,8 @@ and about 80 GB of disk; the VM runs the same macOS as the Mac.
 
 A run installs FocusWell, checks that Gatekeeper accepts it and that the first start
 adds it to the Accessibility list, grants access and moves the mouse between a
-TextEdit and a Calculator window. It deletes its copy afterwards and exits with the
+TextEdit and a Calculator window. Last, `brew uninstall --zap` has to quit FocusWell
+and remove the app and its preferences. It deletes its copy afterwards and exits with the
 number of failed checks; the log is in `build/test-vm/`. `--show` opens the VM window.
 
 The clean image has SIP turned off, so the test can grant Accessibility, and the user

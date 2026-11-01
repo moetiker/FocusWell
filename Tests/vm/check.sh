@@ -91,8 +91,18 @@ fi
 
 if [ "$1" = cask ]; then
     echo "== uninstall"
-    brew uninstall --cask focuswell && [ ! -d "$APP" ] && ok "brew uninstall removes the app" \
-        || bad "brew uninstall failed"
+    # FocusWell writes its preferences only when the balloon is switched, so put
+    # one there for the zap to remove.
+    PREFS=~/Library/Preferences/$ID.plist
+    defaults write "$ID" enabled -bool true
+    [ -f "$PREFS" ] || bad "no $PREFS to test the zap with"
+    if brew uninstall --zap --cask focuswell; then
+        pgrep -qx FocusWell && bad "FocusWell still runs after brew uninstall" || ok "brew uninstall quits FocusWell"
+        [ -d "$APP" ] && bad "brew uninstall left $APP" || ok "brew uninstall removes the app"
+        [ -f "$PREFS" ] && bad "brew uninstall --zap left $PREFS" || ok "brew uninstall --zap removes the preferences"
+    else
+        bad "brew uninstall --zap failed"
+    fi
 fi
 
 echo "== $failures failure(s)"
