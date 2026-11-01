@@ -1,8 +1,6 @@
 #!/bin/bash
-# Tests FocusWell in a clean macOS VM (Tart), unattended. On the development Mac
-# old Accessibility entries hide what a new user sees: after 0.1.2 the prompt
-# never added FocusWell to the list there, and nobody could tell whether a clean
-# Mac behaves the same.
+# Tests FocusWell in a clean macOS VM (Tart), unattended. On a Mac that has run
+# earlier builds, their Accessibility entries hide what a new user sees.
 #
 #   scripts/test-vm setup          build the clean image once (about an hour)
 #   scripts/test-vm run [--local] [--show]
@@ -122,8 +120,8 @@ sudo systemsetup -setsleep Off >/dev/null 2>&1 || true
 sudo pmset -a displaysleep 0 sleep 0
 defaults -currentHost write com.apple.screensaver idleTime 0
 sysadminctl -screenLock off -password admin
-# Recovery takes its language and keyboard from here. Without it Recovery came up
-# in German with a QWERTZ keyboard, the "y" for csrutil arrived as "z", and SIP
+# Recovery takes its language and keyboard from here. Without it Recovery can come
+# up with a non-US keyboard; on QWERTZ the "y" for csrutil arrived as "z", and SIP
 # stayed on.
 sudo nvram prev-lang:kbd=en-US:0
 # Homebrew needs git from the Command Line Tools. Right after the first boot
