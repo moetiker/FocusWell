@@ -74,16 +74,22 @@ Casks/focuswell.rb at it.
 
 ### Testing on a clean Mac
 
-`scripts/test-vm` runs FocusWell in a macOS VM with no Accessibility entries, the way a
-new user installs it. It needs [Tart](https://tart.run) and about 60 GB of disk.
+`scripts/test-vm` tests FocusWell unattended in a macOS VM with no Accessibility
+entries. It needs [Tart](https://tart.run), [Packer](https://developer.hashicorp.com/packer)
+and about 80 GB of disk; the VM runs the same macOS as the Mac.
 
-    scripts/test-vm setup   # once: clean image from the current macOS, setup assistant by hand
-    scripts/test-vm run     # throwaway copy of the clean image, deleted when its window closes
-    scripts/test-vm clean   # deletes copies a killed run left behind
+    scripts/test-vm setup           # once, about an hour: clean image focuswell-clean
+    scripts/test-vm run             # tests the released cask in a throwaway copy
+    scripts/test-vm run --local     # tests `make zip` instead
+    scripts/test-vm clean           # deletes copies a killed run left behind
 
-In the copy, install the release as under [Install](#install), or a local build from
-`/Volumes/My Shared Files/build`. The clean image itself stays
-untouched. `tart delete focuswell-clean` removes it.
+A run installs FocusWell, checks that Gatekeeper accepts it and that the first start
+adds it to the Accessibility list, grants access and moves the mouse between a
+TextEdit and a Calculator window. It deletes its copy afterwards and exits with the
+number of failed checks; the log is in `build/test-vm/`. `--show` opens the VM window.
+
+The clean image has SIP turned off, so the test can grant Accessibility, and the user
+admin with password admin. `tart delete focuswell-clean` removes it.
 
 ## Troubleshooting
 
