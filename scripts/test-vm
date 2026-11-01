@@ -1,0 +1,62 @@
+#!/bin/bash
+# Tests FocusWell in a clean macOS VM (Tart). On the development Mac old
+# Accessibility entries hide what a new user sees: after 0.1.2 the prompt never
+# added FocusWell to the list there, and nobody could tell whether a clean Mac
+# behaves the same.
+#
+#   scripts/test-vm setup   create the clean image once, from the current macOS IPSW
+#   scripts/test-vm run     start a throwaway copy of it, delete the copy afterwards
+#   scripts/test-vm clean   delete copies a killed run left behind
+#
+# The clean image is never started after setup, so every run begins from the same
+# state. FOCUSWELL_VM names the clean image (default focuswell-clean).
+set -euo pipefail
+
+CLEAN=${FOCUSWELL_VM:-focuswell-clean}
+PREFIX=focuswell-test-
+
+command -v tart >/dev/null || { echo "tart is missing, see https://tart.run" >&2; exit 1; }
+
+exists() { tart list --source local --quiet | grep -qx "$1"; }
+
+case ${1:-} in
+setup)
+    if exists "$CLEAN"; then
+        echo "$CLEAN exists already; delete it with: tart delete $CLEAN" >&2
+        exit 1
+    fi
+    tart create --from-ipsw latest --disk-size 60 "$CLEAN"
+    cat <<EOF
+
+$CLEAN is installed. It starts now; in its window:
+  1. Go through the setup assistant: an admin user, no Apple Account.
+  2. Install Homebrew (https://brew.sh), so a run can test the cask.
+  3. Shut the VM down (Apple menu > Shut Down).
+Do not install FocusWell or grant any permission: the image must stay clean.
+EOF
+    tart run "$CLEAN"
+    ;;
+run)
+    exists "$CLEAN" || { echo "no $CLEAN yet; run: scripts/test-vm setup" >&2; exit 1; }
+    vm=$PREFIX$(date +%Y%m%d-%H%M%S)
+    # The copy goes on every exit: a closed window, Ctrl-C, or a failed tart run.
+    trap 'tart stop "$vm" >/dev/null 2>&1 || true; tart delete "$vm" && echo "deleted $vm"' EXIT
+    trap 'exit 130' INT TERM HUP
+    tart clone "$CLEAN" "$vm"
+    dirs=()
+    # A local build shows up in the VM under /Volumes/My Shared Files/build.
+    [ -d build ] && dirs=(--dir "build:$PWD/build:ro")
+    echo "started $vm; closing its window deletes it"
+    tart run "${dirs[@]+"${dirs[@]}"}" "$vm"
+    ;;
+clean)
+    { tart list --source local --quiet | grep "^$PREFIX" || true; } | while read -r vm; do
+        tart stop "$vm" >/dev/null 2>&1 || true
+        tart delete "$vm" && echo "deleted $vm"
+    done
+    ;;
+*)
+    echo "usage: $0 setup|run|clean" >&2
+    exit 2
+    ;;
+esac

@@ -72,6 +72,19 @@ To do the same by hand:
 This leaves build/FocusWell-<version>.zip for the GitHub release `v<version>` and points
 Casks/focuswell.rb at it.
 
+### Testing on a clean Mac
+
+`scripts/test-vm` runs FocusWell in a macOS VM with no Accessibility entries, the way a
+new user installs it. It needs [Tart](https://tart.run) and about 60 GB of disk.
+
+    scripts/test-vm setup   # once: clean image from the current macOS, setup assistant by hand
+    scripts/test-vm run     # throwaway copy of the clean image, deleted when its window closes
+    scripts/test-vm clean   # deletes copies a killed run left behind
+
+In the copy, install the release as under [Install](#install), or a local build from
+`/Volumes/My Shared Files/build`. The clean image itself stays
+untouched. `tart delete focuswell-clean` removes it.
+
 ## Troubleshooting
 
 To see what FocusWell decides, start it from a terminal with logging:

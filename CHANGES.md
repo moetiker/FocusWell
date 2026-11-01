@@ -12,6 +12,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### New
+- `scripts/test-vm` tests FocusWell in a throwaway macOS VM without Accessibility entries, and deletes the VM after the test.
 
 ### Changed
 
