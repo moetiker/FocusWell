@@ -51,6 +51,13 @@ FocusWell leaves the focus alone while a mouse button is held, while a menu is o
 and in Mission Control and the Dock. A dialog that has the focus keeps it, and floating
 windows such as palettes do not take it.
 
+When another app makes itself active without a click or a shortcut, for example one
+that shows its window seconds after it was started while you type, the focus goes back
+to the window under the mouse. An app you choose with a click or a shortcut such as
+Command-Tab keeps the focus, and so does a window that opens under the mouse. An app
+started from Spotlight whose window opens away from the mouse gets the focus once the
+mouse is over it.
+
 ## Build
 
 Building needs Xcode or the Command Line Tools with Swift 6.
@@ -85,7 +92,8 @@ and about 80 GB of disk; the VM runs the same macOS as the Mac.
 
 A run installs FocusWell, checks that Gatekeeper accepts it and that the first start
 adds it to the Accessibility list, grants access and moves the mouse between a
-TextEdit and a Calculator window. Last, `brew uninstall --zap` has to quit FocusWell
+TextEdit and a Calculator window, then lets Calculator make itself active while
+typing in TextEdit. Last, `brew uninstall --zap` has to quit FocusWell
 and remove the app and its preferences. It deletes its copy afterwards and exits with the
 number of failed checks; the log is in `build/test-vm/`. `--show` opens the VM window.
 

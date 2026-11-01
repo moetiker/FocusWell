@@ -16,6 +16,9 @@ public struct Settings: Sendable {
     /// Change the focus only when the mouse is on another screen than the focused window.
     public var requireScreenChange = false
     public var ignoreSpaceChanged = false
+    /// Give the focus back to the window under the mouse when another app makes itself
+    /// active without a click or a shortcut.
+    public var keepFocusOnActivation = true
     /// Apps by name that never get the focus. FocusWell adds AssistiveControl itself.
     public var ignoreApps: [String] = []
     /// Turns ignoreApps into the list of the only apps that get the focus.

@@ -45,6 +45,10 @@ public final class FocusEngine {
     // delayTicks = 1 -> delay finished
     // delayTicks = n -> delay started
     private var delayTicks = 0
+    // the app that was active before the one that just became active
+    private var activePID: pid_t?
+    // system uptime when command, option or control was last seen held
+    private var lastShortcut: TimeInterval = 0
 
     private var axObserver: AXObserver?
     private var previousMouseWindowID: CGWindowID?
@@ -85,6 +89,15 @@ public final class FocusEngine {
             }
         })
 
+        activePID = NSWorkspace.shared.frontmostApplication?.processIdentifier
+        observers.append(NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main
+        ) { notification in
+            let pid = (notification.userInfo?[NSWorkspace.applicationUserInfoKey]
+                as? NSRunningApplication)?.processIdentifier
+            MainActor.assumeIsolated { FocusEngine.shared?.appActivated(pid) }
+        })
+
         // The timer only fires in the default run loop mode, so the focus does not
         // change while a menu is open.
         let timer = Timer(timeInterval: Double(settings.pollMillis) / 1000, repeats: true) { _ in
@@ -117,7 +130,39 @@ public final class FocusEngine {
         oldPoint = .zero
     }
 
+    /// An app became active. When it did so on its own, the window under the mouse
+    /// gets the focus back the way it does after a space change.
+    private func appActivated(_ pid: pid_t?) {
+        guard let pid else { return }
+        let previous = activePID
+        activePID = pid
+        guard settings.keepFocusOnActivation else { return }
+
+        noteShortcut()
+        let sinceClick = [CGEventType.leftMouseDown, .rightMouseDown, .otherMouseDown].map {
+            CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: $0)
+        }.min() ?? .infinity
+        let sinceShortcut = ProcessInfo.processInfo.systemUptime - lastShortcut
+        let owner = mouseWindow(at: oldCorrectedPoint)?.pid
+        guard StolenFocus.isStolen(activated: pid, previous: previous, mouseWindowOwner: owner,
+            sinceClick: sinceClick, sinceShortcut: sinceShortcut) else { return }
+
+        Log.debug("App became active on its own, focus back to the mouse window")
+        focusTimes = 3
+        delayTicks = 0
+    }
+
+    /// command-tab activates the app when command is released, so the modifiers are
+    /// remembered on every tick: at the activation they are no longer held.
+    private func noteShortcut() {
+        let flags = CGEventSource.flagsState(.combinedSessionState)
+        if !flags.isDisjoint(with: [.maskCommand, .maskAlternate, .maskControl]) {
+            lastShortcut = ProcessInfo.processInfo.systemUptime
+        }
+    }
+
     private func onTick() {
+        noteShortcut()
         // determine if the mouse moved
         var mousePoint = CGEvent(source: nil)?.location ?? .zero
         let mouseXDiff = mousePoint.x - oldPoint.x

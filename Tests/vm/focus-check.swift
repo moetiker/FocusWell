@@ -5,6 +5,8 @@
 //   focus-check <bundle id A> <bundle id B>
 //
 // Both apps must be running with one window each. Exit 0 when every check passes.
+// Last, B makes itself active while the user types in A, which must not take the
+// focus from A, and command-tab must still switch to B.
 import AppKit
 
 func fail(_ message: String) -> Never {
@@ -83,6 +85,23 @@ func pointer(to point: CGPoint) {
     sleep(2)
 }
 
+/// Posts a key press, with `flags` held around it when given.
+func key(_ code: CGKeyCode, flags: CGEventFlags = []) {
+    let command: CGKeyCode = 0x37
+    if flags.contains(.maskCommand) { post(command, down: true, flags: flags) }
+    post(code, down: true, flags: flags)
+    post(code, down: false, flags: flags)
+    if flags.contains(.maskCommand) { post(command, down: false, flags: []) }
+}
+
+func post(_ code: CGKeyCode, down: Bool, flags: CGEventFlags) {
+    let event = CGEvent(keyboardEventSource: nil, virtualKey: code, keyDown: down)
+    event?.flags = flags
+    event?.post(tap: .cghidEventTap)
+    // command-tab needs command held for a moment, as a hand would
+    usleep(150_000)
+}
+
 func center(_ r: CGRect) -> CGPoint { CGPoint(x: r.midX, y: r.midY) }
 
 let args = CommandLine.arguments
@@ -119,4 +138,22 @@ print("ok: \(args[2]) was not raised")
 pointer(to: center(frameA))
 guard focusedPID() == a.pid else { fail("mouse back over \(args[1]), but it did not get the focus") }
 print("ok: mouse back over \(args[1]) gave it the focus")
+
+// typing a, b, c in A, then B makes itself active
+for code: CGKeyCode in [0x00, 0x0b, 0x08] { key(code) }
+sleep(2)
+AXUIElementSetAttributeValue(b.element, kAXFrontmostAttribute as CFString, kCFBooleanTrue)
+sleep(2)
+guard focusedPID() == a.pid else {
+    fail("\(args[2]) made itself active while typing in \(args[1]) and kept the focus")
+}
+print("ok: \(args[2]) making itself active did not take the focus from \(args[1])")
+
+sleep(2)
+key(0x30, flags: .maskCommand) // command-tab
+sleep(2)
+guard focusedPID() == b.pid else {
+    fail("command-tab did not leave the focus on \(args[2]), front pid \(focusedPID() ?? -1)")
+}
+print("ok: command-tab to \(args[2]) keeps the focus there")
 print("PASS")
