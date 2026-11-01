@@ -6,7 +6,8 @@
 //
 // Both apps must be running with one window each. Exit 0 when every check passes.
 // Last, B makes itself active while the user types in A, which must not take the
-// focus from A, and command-tab must still switch to B.
+// focus from A, command-tab must still switch to B, and B chosen in Spotlight must
+// keep the focus although its window is not under the mouse.
 import AppKit
 
 func fail(_ message: String) -> Never {
@@ -102,6 +103,17 @@ func post(_ code: CGKeyCode, down: Bool, flags: CGEventFlags) {
     usleep(150_000)
 }
 
+func type(_ text: String) {
+    for var unit in text.utf16 {
+        for down in [true, false] {
+            let event = CGEvent(keyboardEventSource: nil, virtualKey: 0, keyDown: down)
+            event?.keyboardSetUnicodeString(stringLength: 1, unicodeString: &unit)
+            event?.post(tap: .cghidEventTap)
+            usleep(80_000)
+        }
+    }
+}
+
 func center(_ r: CGRect) -> CGPoint { CGPoint(x: r.midX, y: r.midY) }
 
 let args = CommandLine.arguments
@@ -156,4 +168,19 @@ guard focusedPID() == b.pid else {
     fail("command-tab did not leave the focus on \(args[2]), front pid \(focusedPID() ?? -1)")
 }
 print("ok: command-tab to \(args[2]) keeps the focus there")
+
+// near the left edge of A: Spotlight opens in the middle of the screen, and the
+// mouse over its window would leave the focus alone anyway
+pointer(to: CGPoint(x: frameA.minX + 40, y: frameA.midY))
+guard focusedPID() == a.pid else { fail("mouse over \(args[1]) again, but it did not get the focus") }
+key(0x31, flags: .maskCommand) // command-space opens Spotlight
+sleep(2)
+type(NSRunningApplication(processIdentifier: b.pid)?.localizedName ?? args[2])
+sleep(2)
+key(0x24) // return
+sleep(3)
+guard focusedPID() == b.pid else {
+    fail("\(args[2]) chosen in Spotlight did not keep the focus, front pid \(focusedPID() ?? -1)")
+}
+print("ok: \(args[2]) chosen in Spotlight keeps the focus")
 print("PASS")

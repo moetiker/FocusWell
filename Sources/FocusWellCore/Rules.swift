@@ -15,6 +15,12 @@ enum Rules {
     /// the mouse moves to another app or out of the focused window.
     static let appsRaisingOnFocus = ["IntelliJ IDEA", "PyCharm", "WebStorm", "Arc", "Dia"]
 
+    /// Launchers that start or switch to an app from the keyboard. Spotlight runs as
+    /// com.apple.campo on macOS 27 and shows its window under the name Siri.
+    static let launcherBundleIds: Set<String> = [
+        "com.apple.campo", "com.apple.Spotlight", "com.raycast.macos", "com.runningwithcrayons.Alfred",
+    ]
+
     static let dockBundleId = "com.apple.dock"
     static let assistiveControl = "AssistiveControl"
     static let missionControl = "Mission Control"

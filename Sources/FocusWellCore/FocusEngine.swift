@@ -49,6 +49,9 @@ public final class FocusEngine {
     private var activePID: pid_t?
     // system uptime when command, option or control was last seen held
     private var lastShortcut: TimeInterval = 0
+    // system uptime when a launcher window was last seen since the last activation
+    private var lastLauncher = -TimeInterval.infinity
+    private var launcherOpen = false
 
     private var axObserver: AXObserver?
     private var previousMouseWindowID: CGWindowID?
@@ -138,14 +141,18 @@ public final class FocusEngine {
         activePID = pid
         guard settings.keepFocusOnActivation else { return }
 
-        noteShortcut()
+        noteInput()
+        let now = ProcessInfo.processInfo.systemUptime
+        let sinceLauncher = now - lastLauncher
+        // only the first app that becomes active after the launcher was chosen there
+        lastLauncher = -.infinity
         let sinceClick = [CGEventType.leftMouseDown, .rightMouseDown, .otherMouseDown].map {
             CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: $0)
         }.min() ?? .infinity
-        let sinceShortcut = ProcessInfo.processInfo.systemUptime - lastShortcut
         let owner = mouseWindow(at: oldCorrectedPoint)?.pid
         guard StolenFocus.isStolen(activated: pid, previous: previous, mouseWindowOwner: owner,
-            sinceClick: sinceClick, sinceShortcut: sinceShortcut) else { return }
+            sinceClick: sinceClick, sinceShortcut: now - lastShortcut,
+            sinceLauncher: sinceLauncher) else { return }
 
         Log.debug("App became active on its own, focus back to the mouse window")
         focusTimes = 3
@@ -153,16 +160,33 @@ public final class FocusEngine {
     }
 
     /// command-tab activates the app when command is released, so the modifiers are
-    /// remembered on every tick: at the activation they are no longer held.
-    private func noteShortcut() {
+    /// remembered on every tick: at the activation they are no longer held. A launcher
+    /// opens with a shortcut, and the window list is only read from then on while it
+    /// stays open, since reading it on every tick costs up to several milliseconds.
+    private func noteInput() {
+        let now = ProcessInfo.processInfo.systemUptime
         let flags = CGEventSource.flagsState(.combinedSessionState)
         if !flags.isDisjoint(with: [.maskCommand, .maskAlternate, .maskControl]) {
-            lastShortcut = ProcessInfo.processInfo.systemUptime
+            lastShortcut = now
+        }
+        guard settings.keepFocusOnActivation,
+            launcherOpen || now - lastShortcut <= StolenFocus.userInputWindow else { return }
+        launcherOpen = launcherVisible()
+        if launcherOpen { lastLauncher = now }
+    }
+
+    private func launcherVisible() -> Bool {
+        let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements],
+            kCGNullWindowID) as? [[String: Any]] ?? []
+        return windows.contains { window in
+            guard let pid = window[kCGWindowOwnerPID as String] as? pid_t,
+                let id = NSRunningApplication(processIdentifier: pid)?.bundleIdentifier else { return false }
+            return Rules.launcherBundleIds.contains(id)
         }
     }
 
     private func onTick() {
-        noteShortcut()
+        noteInput()
         // determine if the mouse moved
         var mousePoint = CGEvent(source: nil)?.location ?? .zero
         let mouseXDiff = mousePoint.x - oldPoint.x

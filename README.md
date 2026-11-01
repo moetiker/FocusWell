@@ -54,9 +54,8 @@ windows such as palettes do not take it.
 When another app makes itself active without a click or a shortcut, for example one
 that shows its window seconds after it was started while you type, the focus goes back
 to the window under the mouse. An app you choose with a click or a shortcut such as
-Command-Tab keeps the focus, and so does a window that opens under the mouse. An app
-started from Spotlight whose window opens away from the mouse gets the focus once the
-mouse is over it.
+Command-Tab keeps the focus, and so do an app chosen in Spotlight, Raycast or Alfred
+and a window that opens under the mouse.
 
 ## Build
 
