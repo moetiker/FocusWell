@@ -91,6 +91,7 @@ number of failed checks; the log is in `build/test-vm/`. `--show` opens the VM w
 
 The clean image has SIP turned off, so the test can grant Accessibility, and the user
 admin with password admin. `tart delete focuswell-clean` removes it.
+[docs/testing.md](docs/testing.md) describes each step of setup and a run.
 
 ## Troubleshooting
 
