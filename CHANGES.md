@@ -12,6 +12,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### New
+- `scripts/test-vm` tests FocusWell unattended in a throwaway macOS VM: install, Gatekeeper, the Accessibility prompt and focus following the mouse. The VM is deleted after the test.
 
 ### Changed
 

@@ -72,6 +72,27 @@ To do the same by hand:
 This leaves build/FocusWell-<version>.zip for the GitHub release `v<version>` and points
 Casks/focuswell.rb at it.
 
+### Testing on a clean Mac
+
+`scripts/test-vm` tests FocusWell unattended in a macOS VM with no Accessibility
+entries. It needs [Tart](https://tart.run), [Packer](https://developer.hashicorp.com/packer)
+and about 80 GB of disk; the VM runs the same macOS as the Mac.
+
+    scripts/test-vm setup           # once, about an hour: clean image focuswell-clean
+    scripts/test-vm run             # tests the released cask in a throwaway copy
+    scripts/test-vm run --local     # tests `make zip` instead
+    scripts/test-vm clean           # deletes copies a killed run left behind
+
+A run installs FocusWell, checks that Gatekeeper accepts it and that the first start
+adds it to the Accessibility list, grants access and moves the mouse between a
+TextEdit and a Calculator window. Last, `brew uninstall --zap` has to quit FocusWell
+and remove the app and its preferences. It deletes its copy afterwards and exits with the
+number of failed checks; the log is in `build/test-vm/`. `--show` opens the VM window.
+
+The clean image has SIP turned off, so the test can grant Accessibility, and the user
+admin with password admin. `tart delete focuswell-clean` removes it.
+[docs/testing.md](docs/testing.md) describes each step of setup and a run.
+
 ## Troubleshooting
 
 To see what FocusWell decides, start it from a terminal with logging:
