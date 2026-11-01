@@ -34,5 +34,6 @@ import Testing
         #expect(settings.pollMillis == 50)
         #expect(settings.requireMouseStop)
         #expect(settings.disableKey == .control)
+        #expect(settings.keepFocusOnActivation)
     }
 }

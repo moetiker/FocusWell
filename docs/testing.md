@@ -60,7 +60,15 @@ In the VM, `Tests/vm/check.sh`:
     - moves the mouse to Calculator.
       Checks: Calculator has the focus; its window was not raised above TextEdit;
     - moves the mouse back to TextEdit.
-      Check: TextEdit has the focus again.
+      Check: TextEdit has the focus again;
+    - types a, b, c into TextEdit and makes Calculator active through Accessibility,
+      without a click or a shortcut.
+      Check: TextEdit has the focus again after 2 seconds;
+    - presses Command-Tab.
+      Check: Calculator has the focus and keeps it;
+    - moves the mouse to the left edge of TextEdit, outside the Spotlight window,
+      opens Spotlight with Command-Space, types "Calculator" and Return.
+      Check: Calculator has the focus.
 
     `lsappinfo` reports the front process, the window list reports the order.
 11. Prints an `ok:` or `FAIL:` line per check and `== N failure(s)`, and exits with N.

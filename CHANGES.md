@@ -12,6 +12,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### New
+- An app that makes itself active without a click or a shortcut, for example one that shows its window seconds after it was started, no longer takes the focus from the window under the mouse. Command-Tab, a click, Spotlight, Raycast, Alfred and a window that opens under the mouse still give the app the focus.
 - `scripts/test-vm` tests FocusWell unattended in a throwaway macOS VM: install, Gatekeeper, the Accessibility prompt and focus following the mouse. The VM is deleted after the test.
 
 ### Changed
