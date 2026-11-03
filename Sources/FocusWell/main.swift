@@ -1,5 +1,6 @@
 import AppKit
 import FocusWellCore
+import ServiceManagement
 
 /// A balloon in the menu bar, green while the focus follows the mouse and red while
 /// it does not. A click switches it on and off, the menu on a right click also quits.
@@ -11,6 +12,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let menu = NSMenu()
     private let enabledItem = NSMenuItem()
     private let accessItem = NSMenuItem()
+    private let loginItem = NSMenuItem()
     private var engine: FocusEngine?
     private var trusted = false
 
@@ -28,8 +30,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         accessItem.title = Text.allowAccess
         accessItem.target = self
         accessItem.action = #selector(requestAccess)
+        loginItem.title = Text.openAtLogin
+        loginItem.target = self
+        loginItem.action = #selector(toggleOpenAtLogin)
         menu.addItem(enabledItem)
         menu.addItem(accessItem)
+        menu.addItem(loginItem)
         menu.addItem(.separator())
         menu.addItem(withTitle: Text.quit, action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         // no statusItem.menu: it would open on every click
@@ -46,6 +52,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func clicked() {
         let event = NSApp.currentEvent
         if event?.type == .rightMouseUp || event?.modifierFlags.contains(.control) == true {
+            // read it each time: it can also be switched in System Settings > General > Login Items
+            loginItem.state = SMAppService.mainApp.status == .enabled ? .on : .off
             statusItem.menu = menu
             statusItem.button?.performClick(nil)
             statusItem.menu = nil
@@ -58,6 +66,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func toggle() {
         enabled.toggle()
+    }
+
+    /// Registers FocusWell.app itself as a login item. macOS lists it under
+    /// System Settings > General > Login Items, where it can be switched off as well.
+    @objc private func toggleOpenAtLogin() {
+        let service = SMAppService.mainApp
+        do {
+            if service.status == .enabled {
+                try service.unregister()
+            } else {
+                try service.register()
+            }
+        } catch {
+            NSLog("FocusWell: open at login: %@", error.localizedDescription)
+        }
+        // After the item was switched off in System Settings, macOS lets only System
+        // Settings switch it on again: the status stays requiresApproval.
+        if service.status == .requiresApproval {
+            SMAppService.openSystemSettingsLoginItems()
+        }
     }
 
     @objc private func requestAccess() {
@@ -117,6 +145,7 @@ enum Text {
 
     static let active = german ? "Aktiv" : "Active"
     static let allowAccess = german ? "Bedienungshilfen erlauben…" : "Allow Accessibility Access…"
+    static let openAtLogin = german ? "Bei der Anmeldung öffnen" : "Open at Login"
     static let quit = german ? "FocusWell beenden" : "Quit FocusWell"
     static let unavailable = german
         ? "Auf diesem macOS nicht verfügbar" : "Not available on this macOS"
