@@ -37,6 +37,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(accessItem)
         menu.addItem(loginItem)
         menu.addItem(.separator())
+        menu.addItem(withTitle: Text.about, action: #selector(showAbout), keyEquivalent: "").target = self
         menu.addItem(withTitle: Text.quit, action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         // no statusItem.menu: it would open on every click
         statusItem.button?.target = self
@@ -86,6 +87,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if service.status == .requiresApproval {
             SMAppService.openSystemSettingsLoginItems()
         }
+    }
+
+    /// The standard About panel: icon, name, version and copyright come from Info.plist,
+    /// the credits add the link to the repository.
+    @objc private func showAbout() {
+        let url = "https://github.com/moetiker/FocusWell"
+        let credits = NSMutableAttributedString(
+            string: url,
+            attributes: [
+                .link: URL(string: url) as Any,
+                .font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize),
+            ])
+        let center = NSMutableParagraphStyle()
+        center.alignment = .center
+        credits.addAttribute(.paragraphStyle, value: center, range: NSRange(location: 0, length: credits.length))
+        // CFBundleVersion equals the short version, the panel would show it twice: "0.3.0 (0.3.0)"
+        NSApp.orderFrontStandardAboutPanel(options: [.credits: credits, .version: ""])
+        // a menu bar app is not active; without this the panel opens behind other windows
+        NSApp.activate()
     }
 
     @objc private func requestAccess() {
@@ -146,6 +166,7 @@ enum Text {
     static let active = german ? "Aktiv" : "Active"
     static let allowAccess = german ? "Bedienungshilfen erlauben…" : "Allow Accessibility Access…"
     static let openAtLogin = german ? "Bei der Anmeldung öffnen" : "Open at Login"
+    static let about = german ? "Über FocusWell" : "About FocusWell"
     static let quit = german ? "FocusWell beenden" : "Quit FocusWell"
     static let unavailable = german
         ? "Auf diesem macOS nicht verfügbar" : "Not available on this macOS"
