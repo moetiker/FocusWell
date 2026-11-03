@@ -12,11 +12,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### New
-- **Open at Login** in the menu starts FocusWell when you log in. FocusWell then appears under System Settings > General > Login Items, where it can be switched off as well.
 
 ### Changed
 
 ### Fixed
+
+## 0.3.0 - 2026-11-03
+### New
+- **Open at Login** in the menu starts FocusWell when you log in. FocusWell then appears under System Settings > General > Login Items, where it can be switched off as well.
 
 ## 0.2.0 - 2026-11-01
 ### New
