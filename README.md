@@ -43,7 +43,8 @@ FocusWell lives in the menu bar as a balloon:
 | <img src="docs/balloon-off.png" width="24" alt="red balloon"> | Off, or Accessibility access is missing. |
 
 - `Click`: Switch FocusWell on or off. Without Accessibility access, the click asks for it.
-- `Right-click, Control-click`: Open the menu with Quit.
+- `Right-click, Control-click`: Open the menu. **Open at Login** starts FocusWell when you
+  log in; it also appears under System Settings > General > Login Items.
 - `Control` held: Pause while you move the mouse, for example to cross a window on the
   way to another one.
 
